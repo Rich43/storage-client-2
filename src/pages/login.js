@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Button, Container, TextField, Typography } from '@mui/material';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useLazyQuery } from '@apollo/client';
 import { useRouter } from 'next/router';
 
-const LOGIN_MUTATION = gql`
-    mutation login($username: String!, $password: String!) {
+const LOGIN_QUERY = gql`
+    query login($username: String!, $password: String!) {
         login(username: $username, password: $password) {
             sessionToken
         }
@@ -15,14 +15,16 @@ function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const router = useRouter();
-    const [login, { error }] = useMutation(LOGIN_MUTATION);
+    const [login, { data, error }] = useLazyQuery(LOGIN_QUERY);
 
     const handleLogin = async () => {
         try {
-            const { data } = await login({ variables: { username, password } });
-            const { sessionToken } = data.login;
-            localStorage.setItem('token', sessionToken);
-            router.push('/');
+            await login({ variables: { username, password } });
+            if (data) {
+                const { sessionToken } = data.login;
+                localStorage.setItem('token', sessionToken);
+                await router.push('/');
+            }
         } catch (e) {
             console.error('Login failed', e);
         }

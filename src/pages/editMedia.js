@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Button,
     Container,
@@ -11,51 +11,87 @@ import {
     TextField,
     Typography
 } from '@mui/material';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 
-const CREATE_MEDIA_MUTATION = gql`
-    mutation createMedia($input: CreateMediaInput!) {
-        createMedia(input: $input) {
+const GET_MEDIA_BY_ID_QUERY = gql`
+    query getMediaById($id: Int!) {
+        getMediaById(id: $id) {
+            id
+            title
+            url
+            mimetype
+            thumbnail
+            adminOnly
+        }
+    }
+`;
+
+const EDIT_MEDIA_MUTATION = gql`
+    mutation editMedia($input: EditMediaInput!) {
+        editMedia(input: $input) {
             id
         }
     }
 `;
 
-function UploadMedia() {
+function EditMedia() {
+    const router = useRouter();
+    const { id } = router.query;
+    const { loading, error, data } = useQuery(GET_MEDIA_BY_ID_QUERY, {
+        variables: { id: parseInt(id) },
+    });
+    const [editMedia] = useMutation(EDIT_MEDIA_MUTATION);
+
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
     const [mimetype, setMimetype] = useState('');
     const [thumbnail, setThumbnail] = useState('');
     const [adminOnly, setAdminOnly] = useState(false);
-    const [createMedia] = useMutation(CREATE_MEDIA_MUTATION);
 
-    const handleUpload = async () => {
+    useEffect(() => {
+        if (data) {
+            const media = data.getMediaById;
+            setTitle(media.title);
+            setUrl(media.url);
+            setMimetype(media.mimetype);
+            setThumbnail(media.thumbnail);
+            setAdminOnly(media.adminOnly);
+        }
+    }, [data]);
+
+    const handleEdit = async () => {
         try {
-            await createMedia({
+            await editMedia({
                 variables: {
                     input: {
+                        id: parseInt(id),
                         title,
                         url,
                         mimetype,
                         thumbnail,
-                        adminOnly
-                    }
-                }
+                        adminOnly,
+                    },
+                },
             });
-            alert('Media uploaded successfully');
+            alert('Media updated successfully');
+            router.push('/');
         } catch (error) {
-            console.error('Upload failed', error);
-            alert('Failed to upload media');
+            console.error('Edit failed', error);
+            alert('Failed to edit media');
         }
     };
+
+    if (loading) return <Typography>Loading...</Typography>;
+    if (error) return <Typography>Error loading media</Typography>;
 
     return (
         <div>
             <Navbar />
             <Container maxWidth="sm">
                 <Typography variant="h4" gutterBottom>
-                    Upload Media
+                    Edit Media
                 </Typography>
                 <TextField
                     label="Title"
@@ -102,12 +138,12 @@ function UploadMedia() {
                     }
                     label="Admin Only"
                 />
-                <Button variant="contained" color="primary" onClick={handleUpload}>
-                    Upload
+                <Button variant="contained" color="primary" onClick={handleEdit}>
+                    Save Changes
                 </Button>
             </Container>
         </div>
     );
 }
 
-export default UploadMedia;
+export default EditMedia;
