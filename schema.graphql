@@ -1,0 +1,83 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Session {
+  userId: Int!
+  sessionId: Int!
+  username: String!
+  avatarPicture: String
+  sessionToken: String!
+  sessionExpireDateTime: String!
+  admin: Boolean!
+}
+
+type Media {
+  id: Int!
+  title: String!
+  url: String!
+  mimetype: String!
+  thumbnail: String
+  userId: Int!
+  adminOnly: Boolean!
+}
+
+type Album {
+  id: Int!
+  title: String!
+  media: [Media]
+  userId: Int!
+}
+
+input MediaFilter {
+  title: String
+  mimetype: String
+  userId: Int
+}
+
+input Pagination {
+  page: Int!
+  limit: Int!
+}
+
+input Sorting {
+  field: String!
+  order: String!
+}
+
+input CreateMediaInput {
+  title: String!
+  url: String!
+  mimetype: String!
+  thumbnail: String
+  adminOnly: Boolean
+}
+
+input EditMediaInput {
+  id: Int!
+  title: String
+  url: String
+  mimetype: String
+  thumbnail: String
+  adminOnly: Boolean
+}
+
+type Query {
+  login(username: String!, password: String!): Session
+  logout: Boolean!
+  refreshSession: Session
+  listVideos(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listMusic(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listAlbums(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Album]
+  listPictures(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listDocuments(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listOtherFiles(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  getMediaById(id: Int!): Media
+}
+
+type Mutation {
+  createMedia(input: CreateMediaInput!): Media
+  editMedia(input: EditMediaInput!): Media
+  deleteMedia(id: Int!): Boolean
+}

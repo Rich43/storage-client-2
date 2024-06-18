@@ -1,0 +1,3 @@
+schema: ./schema.graphql
+include: src/**/*.js
+exclude: node_modules
