@@ -1,43 +1,58 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { gql, useQuery } from '@apollo/client';
-
-const REFRESH_SESSION = gql`
-    query refreshSession {
-        refreshSession {
-            userId
-            sessionId
-            username
-            avatarPicture
-            sessionToken
-            sessionExpireDateTime
-            admin
-        }
-    }
-`;
+import { useDispatch, useSelector } from 'react-redux';
+import { gql, useLazyQuery } from '@apollo/client';
+import { setAuthState } from '../features/auth/authSlice';
 
 const withAuth = (WrappedComponent) => {
     return (props) => {
         const [loading, setLoading] = useState(true);
         const router = useRouter();
-        const { data, error, refetch } = useQuery(REFRESH_SESSION);
+        const dispatch = useDispatch();
+        const { sessionToken } = useSelector((state) => state.auth);
+
+        const REFRESH_SESSION = gql`
+            query refreshSession {
+                refreshSession {
+                    userId
+                    sessionId
+                    username
+                    avatarPicture
+                    sessionToken
+                    sessionExpireDateTime
+                    admin
+                }
+            }
+        `;
+
+        const [refreshSessionQuery, { data }] = useLazyQuery(REFRESH_SESSION, {
+            onCompleted: (data) => {
+                if (data && data.refreshSession) {
+                    dispatch(setAuthState(data.refreshSession));
+                    setLoading(false);
+                } else {
+                    router.push('/login');
+                }
+            },
+        });
 
         useEffect(() => {
             const checkAuth = async () => {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    router.push('/login');
+                    return;
+                }
                 try {
-                    const { data } = await refetch();
-                    if (data && data.refreshSession) {
-                        localStorage.setItem('token', data.refreshSession.sessionToken);
-                        setLoading(false);
-                    } else {
-                        await router.push('/login');
-                    }
+                    await refreshSessionQuery();
                 } catch (error) {
-                    await router.push('/login');
+                    router.push('/login');
                 }
             };
-            checkAuth().then(r => {});
-        }, [refetch, router]);
+            if (typeof window !== 'undefined') {
+                checkAuth();
+            }
+        }, [refreshSessionQuery, router]);
 
         if (loading) {
             return <p>Loading...</p>; // or a loading spinner

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { Button, Card, CardContent, CardMedia, Grid, Typography } from '@mui/material';
 import Link from 'next/link';
@@ -18,6 +18,15 @@ const LIST_VIDEOS_QUERY = gql`
 
 function Home() {
     const { loading, error, data } = useQuery(LIST_VIDEOS_QUERY);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (!isClient) {
+        return <p>Loading...</p>;
+    }
 
     if (loading) return <Typography>Loading...</Typography>;
     if (error) return <Typography>Error loading videos</Typography>;

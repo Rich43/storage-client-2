@@ -1,8 +1,11 @@
 import React from 'react';
 import { ApolloProvider } from '@apollo/client';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Provider } from 'react-redux';
+import store from '../store';
 import client from '../lib/apolloClient';
 import '../styles/globals.css';
+import withTokenRefresh from "@/features/auth/withTokenRefresh";
+import { createTheme, ThemeProvider } from "@mui/material";
 
 const theme = createTheme({
     palette: {
@@ -16,12 +19,16 @@ const theme = createTheme({
 });
 
 function MyApp({ Component, pageProps }) {
+    const AuthComponent = withTokenRefresh(Component);
+
     return (
-        <ApolloProvider client={client}>
-            <ThemeProvider theme={theme}>
-                <Component {...pageProps} />
-            </ThemeProvider>
-        </ApolloProvider>
+        <Provider store={store}>
+            <ApolloProvider client={client}>
+                <ThemeProvider theme={theme}>
+                    <AuthComponent {...pageProps} />
+                </ThemeProvider>
+            </ApolloProvider>
+        </Provider>
     );
 }
 

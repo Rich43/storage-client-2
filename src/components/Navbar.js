@@ -1,26 +1,34 @@
 import React from 'react';
 import { AppBar, Button, Toolbar, Typography } from '@mui/material';
-import Link from 'next/link';
+import Image from 'next/image';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '@/features/auth/authSlice';
 
-function Navbar() {
+const Navbar = () => {
+    const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.auth);
+
+    const handleLogout = () => {
+        dispatch(logout());
+    };
+
     return (
         <AppBar position="static">
             <Toolbar>
-                <Typography variant="h6" style={{ flexGrow: 1 }}>
-                    Media Sharing App
+                <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+                <Typography variant="h6" style={{ flexGrow: 1, marginLeft: '10px' }}>
+                    Storage
                 </Typography>
-                <Link href="/" passHref>
-                    <Button color="inherit">Home</Button>
-                </Link>
-                <Link href="/upload" passHref>
-                    <Button color="inherit">Upload</Button>
-                </Link>
-                <Link href="/login" passHref>
+                {user ? (
+                    <Button color="inherit" onClick={handleLogout}>
+                        Logout
+                    </Button>
+                ) : (
                     <Button color="inherit">Login</Button>
-                </Link>
+                )}
             </Toolbar>
         </AppBar>
     );
-}
+};
 
 export default Navbar;
