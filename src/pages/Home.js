@@ -2,11 +2,12 @@ import React from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { Button, Card, CardContent, CardMedia, Grid, Typography } from '@mui/material';
 import Link from 'next/link';
-import Navbar from './Navbar';
+import Navbar from '../components/Navbar';
+import withAuth from '../hoc/withAuth';
 
 const LIST_VIDEOS_QUERY = gql`
-    query listVideos {
-        listVideos {
+    query listVideos($filter: MediaFilter, $pagination: Pagination, $sorting: Sorting) {
+        listVideos(filter: $filter, pagination: $pagination, sorting: $sorting) {
             id
             title
             url
@@ -52,4 +53,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default withAuth(Home);
