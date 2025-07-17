@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Storage Client
 
-## Getting Started
+This project provides a React/Next.js front end for the storage service. It communicates with a GraphQL API and allows users to authenticate, browse existing media and upload new files.
 
-First, run the development server:
+## Requirements
+
+- Node.js 18 or newer
+- A running GraphQL server at `http://localhost:4000/graphql` (not included in this repository)
+
+## Installation
+
+Install dependencies with npm:
+
+```bash
+npm install
+```
+
+## Running the application
+
+Start the GraphQL backend, then run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app will be available at [http://localhost:3000](http://localhost:3000). GraphQL requests are proxied to `http://localhost:4000/graphql` as configured in `next.config.mjs`.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+To build for production run:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+- `src/pages` – Next.js pages such as `login`, `upload` and media listings
+- `src/components` – shared React components
+- `src/features` – Redux logic for authentication and token refresh
+- `schema.graphql` – GraphQL schema used by the client (described below)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Protocol
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+The client uses the following GraphQL schema to communicate with the storage service:
 
-## Deploy on Vercel
+```graphql
+schema {
+  query: Query
+  mutation: Mutation
+}
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+type Session {
+  userId: Int!
+  sessionId: Int!
+  username: String!
+  avatarPicture: String
+  sessionToken: String!
+  sessionExpireDateTime: String!
+  admin: Boolean!
+}
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+type Media {
+  id: Int!
+  title: String!
+  url: String!
+  mimetype: String!
+  thumbnail: String
+  userId: Int!
+  adminOnly: Boolean!
+}
+
+type Album {
+  id: Int!
+  title: String!
+  media: [Media]
+  userId: Int!
+}
+
+input MediaFilter {
+  title: String
+  mimetype: String
+  userId: Int
+}
+
+input Pagination {
+  page: Int!
+  limit: Int!
+}
+
+input Sorting {
+  field: String!
+  order: String!
+}
+
+input CreateMediaInput {
+  title: String!
+  url: String!
+  mimetype: String!
+  thumbnail: String
+  adminOnly: Boolean
+}
+
+input EditMediaInput {
+  id: Int!
+  title: String
+  url: String
+  mimetype: String
+  thumbnail: String
+  adminOnly: Boolean
+}
+
+type Query {
+  login(username: String!, password: String!): Session
+  logout: Boolean!
+  refreshSession: Session
+  listVideos(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listMusic(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listAlbums(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Album]
+  listPictures(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listDocuments(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  listOtherFiles(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
+  getMediaById(id: Int!): Media
+}
+
+type Mutation {
+  createMedia(input: CreateMediaInput!): Media
+  editMedia(input: EditMediaInput!): Media
+  deleteMedia(id: Int!): Boolean
+}
+```
+
