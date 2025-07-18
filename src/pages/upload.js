@@ -13,6 +13,8 @@ import {
     Typography
 } from '@mui/material';
 import { gql, useMutation } from '@apollo/client';
+import { useSelector } from 'react-redux';
+import { uploadFile } from '../lib/fileServerApi';
 import Navbar from '../components/Navbar';
 
 const CREATE_MEDIA_MUTATION = gql`
@@ -31,21 +33,41 @@ function UploadMedia() {
     const [mimetype, setMimetype] = useState('');
     const [thumbnail, setThumbnail] = useState('');
     const [adminOnly, setAdminOnly] = useState(false);
+    const [file, setFile] = useState(null);
+    const { sessionToken } = useSelector((state) => state.auth);
     const [createMedia, { loading }] = useMutation(CREATE_MEDIA_MUTATION);
+
+    const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = (error) => reject(error);
+        });
 
     const handleUpload = async () => {
         try {
-            await createMedia({
+            const { data } = await createMedia({
                 variables: {
                     input: {
                         title,
                         url,
                         mimetype,
                         thumbnail,
-                        adminOnly
-                    }
-                }
+                        adminOnly,
+                    },
+                },
             });
+            const mediaId = data.media.createMedia.id;
+            if (file) {
+                const fileContent = await toBase64(file);
+                await uploadFile({
+                    sessionToken,
+                    mediaId,
+                    fileContent,
+                    mimeType: mimetype,
+                });
+            }
             alert('Media uploaded successfully');
         } catch (error) {
             console.error('Upload failed', error);
@@ -88,6 +110,14 @@ function UploadMedia() {
                         <MenuItem value="application/zip">Archive (ZIP)</MenuItem>
                     </Select>
                 </FormControl>
+                <Button variant="outlined" component="label" sx={{ mt: 2 }}>
+                    Select File
+                    <input
+                        type="file"
+                        hidden
+                        onChange={(e) => setFile(e.target.files[0])}
+                    />
+                </Button>
                 <TextField
                     label="Thumbnail URL"
                     value={thumbnail}
