@@ -1,6 +1,7 @@
 # Storage Client
 
 This project provides a React/Next.js front end for the storage service. It communicates with a GraphQL API and allows users to authenticate, browse existing media and upload new files.
+The related REST API used for storing raw files is documented in `docs/FILE_SERVER_PROTOCOL.md`.
 
 ## Requirements
 
