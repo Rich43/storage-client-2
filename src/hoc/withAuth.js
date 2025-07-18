@@ -5,7 +5,7 @@ import { gql, useLazyQuery } from '@apollo/client';
 import { setAuthState } from '../features/auth/authSlice';
 
 const withAuth = (WrappedComponent) => {
-    return (props) => {
+    const Component = (props) => {
         const [loading, setLoading] = useState(true);
         const router = useRouter();
         const dispatch = useDispatch();
@@ -60,6 +60,8 @@ const withAuth = (WrappedComponent) => {
 
         return <WrappedComponent {...props} />;
     };
+    Component.displayName = `withAuth(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+    return Component;
 };
 
 export default withAuth;
