@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
     Button,
+    CircularProgress,
     Container,
     FormControl,
     FormControlLabel,
@@ -28,7 +29,7 @@ function UploadMedia() {
     const [mimetype, setMimetype] = useState('');
     const [thumbnail, setThumbnail] = useState('');
     const [adminOnly, setAdminOnly] = useState(false);
-    const [createMedia] = useMutation(CREATE_MEDIA_MUTATION);
+    const [createMedia, { loading }] = useMutation(CREATE_MEDIA_MUTATION);
 
     const handleUpload = async () => {
         try {
@@ -102,9 +103,10 @@ function UploadMedia() {
                     }
                     label="Admin Only"
                 />
-                <Button variant="contained" color="primary" onClick={handleUpload}>
-                    Upload
+                <Button variant="contained" color="primary" onClick={handleUpload} disabled={loading}>
+                    {loading ? 'Uploading...' : 'Upload'}
                 </Button>
+                {loading && <CircularProgress size={24} sx={{ ml: 2 }} />}
             </Container>
         </div>
     );

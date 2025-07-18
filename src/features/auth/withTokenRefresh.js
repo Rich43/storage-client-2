@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { refreshSession, setAuthState } from './authSlice';
 
 const withTokenRefresh = (WrappedComponent) => {
-    return (props) => {
+    const Component = (props) => {
         const dispatch = useDispatch();
 
         useEffect(() => {
@@ -16,6 +16,8 @@ const withTokenRefresh = (WrappedComponent) => {
 
         return <WrappedComponent {...props} />;
     };
+    Component.displayName = `withTokenRefresh(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+    return Component;
 };
 
 export default withTokenRefresh;
