@@ -1,83 +1,257 @@
 schema {
-  query: Query
-  mutation: Mutation
+    query: Query
+    mutation: Mutation
+}
+
+enum Category {
+    IMAGE
+    VIDEO
+    AUDIO
+    DOCUMENT
+    OTHER
+}
+
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    avatar: Media
+    created: String!
+    updated: String
+    activated: Boolean!
+    banned: Boolean!
+    likedMedia: [LikeDislike!]!
+    dislikedMedia: [LikeDislike!]!
+}
+
+input EditUserInput {
+    id: ID!
+    username: String
+    email: String
+    password: String
+}
+
+input RegisterUserInput {
+    username: String!
+    email: String!
+    password: String!
+}
+
+type MimeType {
+    id: ID!
+    type: String!
+    category: Category!
+    extensions: [String]
+    preferred_extension: String!
+}
+
+input MimeTypeFilter {
+    type: String
+    category: Category
+    extension: String
+    preferred_extension: String
 }
 
 type Session {
-  userId: Int!
-  sessionId: Int!
-  username: String!
-  avatarPicture: String
-  sessionToken: String!
-  sessionExpireDateTime: String!
-  admin: Boolean!
+    userId: ID!
+    sessionId: ID!
+    user: User!
+    avatarPicture: String
+    sessionToken: String!
+    sessionExpireDateTime: String!
+    admin: Boolean!
+    created: String!
+    updated: String
+}
+
+enum LikeDislikeAction {
+    LIKE
+    DISLIKE
 }
 
 type Media {
-  id: Int!
-  title: String!
-  url: String!
-  mimetype: String!
-  thumbnail: String
-  userId: Int!
-  adminOnly: Boolean!
+    id: ID!
+    title: String!
+    description: String
+    url: String!
+    mimetype: String!
+    thumbnail: Media
+    userId: ID!
+    adminOnly: Boolean!
+    uploaded: Boolean!
+    uploadedDate: String
+    created: String!
+    updated: String
+    fileSize: Int!
+    view_count: Int!
+    likes: Int!
+    dislikes: Int!
+}
+
+type MediaComment {
+    id: ID!
+    mediaId: ID!
+    userId: ID!
+    comment: String!
+    created: String!
+    updated: String!
+}
+
+type LikeDislike {
+    id: ID!
+    userId: ID!
+    mediaId: ID!
+    action: LikeDislikeAction!
+    createdAt: String!
+    updatedAt: String!
+}
+
+input CreateLikeDislikeInput {
+    mediaId: ID!
+    action: LikeDislikeAction!
+}
+
+input UpdateLikeDislikeInput {
+    id: ID!
+    action: LikeDislikeAction!
 }
 
 type Album {
-  id: Int!
-  title: String!
-  media: [Media]
-  userId: Int!
+    id: ID!
+    title: String!
+    media: [Media]
+    userId: ID!
+    created: String!
+    updated: String
 }
 
 input MediaFilter {
-  title: String
-  mimetype: String
-  userId: Int
+    title: String
+    mimetype: String
+    userId: Int
 }
 
 input Pagination {
-  page: Int!
-  limit: Int!
+    page: Int!
+    limit: Int!
 }
 
 input Sorting {
-  field: String!
-  order: String!
+    field: String!
+    order: String!
 }
 
 input CreateMediaInput {
-  title: String!
-  url: String!
-  mimetype: String!
-  thumbnail: String
-  adminOnly: Boolean
+    title: String!
+    url: String!
+    mimetype: String!
+    thumbnail: String
+    adminOnly: Boolean
 }
 
 input EditMediaInput {
-  id: Int!
-  title: String
-  url: String
-  mimetype: String
-  thumbnail: String
-  adminOnly: Boolean
+    id: ID!
+    title: String
+    description: String
+    url: String
+    mimetype: String
+    thumbnail: String
+    adminOnly: Boolean
+}
+
+input CreateMediaCommentInput {
+    mediaId: ID!
+    comment: String!
+}
+
+input EditMediaCommentInput {
+    id: ID!
+    comment: String!
 }
 
 type Query {
-  login(username: String!, password: String!): Session
-  logout: Boolean!
-  refreshSession: Session
-  listVideos(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
-  listMusic(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
-  listAlbums(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Album]
-  listPictures(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
-  listDocuments(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
-  listOtherFiles(filter: MediaFilter, pagination: Pagination, sorting: Sorting): [Media]
-  getMediaById(id: Int!): Media
+    lists: ListQueries
+    gets: GetQueries
+}
+
+type ListQueries {
+    listAlbums(
+        albumTitleFilter: String
+        pagination: Pagination
+        sorting: Sorting
+    ): [Album]
+    listDocuments(
+        filter: MediaFilter
+        pagination: Pagination
+        sorting: Sorting
+    ): [Media]
+    listMedia(
+        filter: MediaFilter
+        pagination: Pagination
+        sorting: Sorting
+    ): [Media]
+    listMediaComments(mediaId: ID!): [MediaComment]
+    listMimeTypes(
+        filter: MimeTypeFilter
+        pagination: Pagination
+        sorting: Sorting
+    ): [MimeType]
+    listMusic(
+        filter: MediaFilter
+        pagination: Pagination
+        sorting: Sorting
+    ): [Media]
+    listOtherFiles(
+        filter: MediaFilter
+        pagination: Pagination
+        sorting: Sorting
+    ): [Media]
+    listPictures(
+        filter: MediaFilter
+        pagination: Pagination
+        sorting: Sorting
+    ): [Media]
+    listRelatedMedia(id: ID!): [Media]
+    listVideos(
+        filter: MediaFilter
+        pagination: Pagination
+        sorting: Sorting
+    ): [Media]
+}
+
+type GetQueries {
+    getDislikesByUser(userId: ID!): [LikeDislike!]!
+    getLikesByUser(userId: ID!): [LikeDislike!]!
+    getMediaById(id: ID!): Media
 }
 
 type Mutation {
-  createMedia(input: CreateMediaInput!): Media
-  editMedia(input: EditMediaInput!): Media
-  deleteMedia(id: Int!): Boolean
+    media: MediaMutations
+    auth: AuthMutations
+    likes: LikeMutations
+}
+
+type MediaMutations {
+    createMedia(input: CreateMediaInput!): Media!
+    editMedia(input: EditMediaInput!): Media!
+    deleteMedia(id: ID!): Boolean!
+    createMediaComment(input: CreateMediaCommentInput!): MediaComment!
+    editMediaComment(input: EditMediaCommentInput!): MediaComment!
+    deleteMediaComment(id: ID!): Boolean!
+}
+
+type AuthMutations {
+    loginUser(username: String!, password: String!): Session
+    logoutUser: Boolean!
+    refreshSession: Session
+    registerUser(input: RegisterUserInput!): User!
+    activateUser(activationCode: String!): Boolean!
+    editUser(input: EditUserInput!): User!
+    setAvatar(mediaId: ID!): User!
+}
+
+type LikeMutations {
+    createLikeDislike(input: CreateLikeDislikeInput!): LikeDislike!
+    updateLikeDislike(input: UpdateLikeDislikeInput!): LikeDislike!
+    deleteLikeDislike(id: ID!): Boolean!
 }
