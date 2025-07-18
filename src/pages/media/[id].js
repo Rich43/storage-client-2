@@ -5,13 +5,15 @@ import { Button, Container, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar';
 
 const GET_MEDIA_BY_ID_QUERY = gql`
-    query getMediaById($id: Int!) {
-        getMediaById(id: $id) {
-            id
-            title
-            url
-            mimetype
-            thumbnail
+    query getMediaById($id: ID!) {
+        gets {
+            getMediaById(id: $id) {
+                id
+                title
+                url
+                mimetype
+                thumbnail
+            }
         }
     }
 `;
@@ -26,7 +28,7 @@ function MediaDetails() {
     if (loading) return <Typography>Loading...</Typography>;
     if (error) return <Typography>Error loading media</Typography>;
 
-    const media = data.getMediaById;
+    const media = data.gets.getMediaById;
 
     return (
         <div>

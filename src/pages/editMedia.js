@@ -16,22 +16,26 @@ import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 
 const GET_MEDIA_BY_ID_QUERY = gql`
-    query getMediaById($id: Int!) {
-        getMediaById(id: $id) {
-            id
-            title
-            url
-            mimetype
-            thumbnail
-            adminOnly
+    query getMediaById($id: ID!) {
+        gets {
+            getMediaById(id: $id) {
+                id
+                title
+                url
+                mimetype
+                thumbnail
+                adminOnly
+            }
         }
     }
 `;
 
 const EDIT_MEDIA_MUTATION = gql`
     mutation editMedia($input: EditMediaInput!) {
-        editMedia(input: $input) {
-            id
+        media {
+            editMedia(input: $input) {
+                id
+            }
         }
     }
 `;
@@ -52,7 +56,7 @@ function EditMedia() {
 
     useEffect(() => {
         if (data) {
-            const media = data.getMediaById;
+            const media = data.gets.getMediaById;
             setTitle(media.title);
             setUrl(media.url);
             setMimetype(media.mimetype);

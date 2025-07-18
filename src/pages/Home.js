@@ -7,55 +7,65 @@ import withAuth from '../hoc/withAuth';
 
 const LIST_VIDEOS_QUERY = gql`
     query listVideos($filter: MediaFilter, $pagination: Pagination, $sorting: Sorting) {
-        listVideos(filter: $filter, pagination: $pagination, sorting: $sorting) {
-            id
-            title
-            url
-            thumbnail
+        lists {
+            listVideos(filter: $filter, pagination: $pagination, sorting: $sorting) {
+                id
+                title
+                url
+                thumbnail
+            }
         }
     }
 `;
 
 const LIST_MUSIC_QUERY = gql`
     query listMusic($filter: MediaFilter, $pagination: Pagination, $sorting: Sorting) {
-        listMusic(filter: $filter, pagination: $pagination, sorting: $sorting) {
-            id
-            title
-            url
-            thumbnail
+        lists {
+            listMusic(filter: $filter, pagination: $pagination, sorting: $sorting) {
+                id
+                title
+                url
+                thumbnail
+            }
         }
     }
 `;
 
 const LIST_PICTURES_QUERY = gql`
     query listPictures($filter: MediaFilter, $pagination: Pagination, $sorting: Sorting) {
-        listPictures(filter: $filter, pagination: $pagination, sorting: $sorting) {
-            id
-            title
-            url
-            thumbnail
+        lists {
+            listPictures(filter: $filter, pagination: $pagination, sorting: $sorting) {
+                id
+                title
+                url
+                thumbnail
+            }
         }
     }
 `;
 
 const LIST_DOCUMENTS_QUERY = gql`
     query listDocuments($filter: MediaFilter, $pagination: Pagination, $sorting: Sorting) {
-        listDocuments(filter: $filter, pagination: $pagination, sorting: $sorting) {
-            id
-            title
-            url
-            thumbnail
+        lists {
+            listDocuments(filter: $filter, pagination: $pagination, sorting: $sorting) {
+                id
+                title
+                url
+                thumbnail
+            }
         }
     }
 `;
 
 const LIST_OTHER_FILES_QUERY = gql`
     query listOtherFiles($filter: MediaFilter, $pagination: Pagination, $sorting: Sorting) {
-        listOtherFiles(filter: $filter, pagination: $pagination, sorting: $sorting) {
-            id
-            title
-            url
-            thumbnail
+        lists {
+            listOtherFiles(filter: $filter, pagination: $pagination, sorting: $sorting) {
+                id
+                title
+                url
+                thumbnail
+            }
         }
     }
 `;
@@ -85,6 +95,8 @@ function Home() {
     if (loading) return <Typography>Loading...</Typography>;
     if (error) return <Typography>Error loading media</Typography>;
 
+    const items = data?.lists ? data.lists[field] : [];
+
     return (
         <div>
             <Navbar />
@@ -96,7 +108,7 @@ function Home() {
                 <Tab label="Other" value="other" />
             </Tabs>
             <Grid container spacing={2}>
-                {data && data[field].map((item) => (
+                {items.map((item) => (
                     <Grid item xs={12} sm={6} md={4} key={item.id}>
                         <Card>
                             <CardMedia
