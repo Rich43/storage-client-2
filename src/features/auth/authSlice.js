@@ -2,29 +2,34 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import gql from 'graphql-tag';
 import client from '../../lib/apolloClient';
 
-const LOGIN_QUERY = gql`
-    query login($username: String!, $password: String!) {
-        login(username: $username, password: $password) {
-            sessionToken
-            userId
-            username
-            avatarPicture
-            sessionExpireDateTime
-            admin
+const LOGIN_MUTATION = gql`
+    mutation login($username: String!, $password: String!) {
+        auth {
+            loginUser(username: $username, password: $password) {
+                sessionToken
+                userId
+                sessionId
+                username
+                avatarPicture
+                sessionExpireDateTime
+                admin
+            }
         }
     }
 `;
 
-const REFRESH_SESSION_QUERY = gql`
-    query refreshSession {
-        refreshSession {
-            userId
-            sessionId
-            username
-            avatarPicture
-            sessionToken
-            sessionExpireDateTime
-            admin
+const REFRESH_SESSION_MUTATION = gql`
+    mutation refreshSession {
+        auth {
+            refreshSession {
+                userId
+                sessionId
+                username
+                avatarPicture
+                sessionToken
+                sessionExpireDateTime
+                admin
+            }
         }
     }
 `;
@@ -33,12 +38,13 @@ export const login = createAsyncThunk(
     'auth/login',
     async ({ username, password }, { rejectWithValue }) => {
         try {
-            const { data } = await client.query({
-                query: LOGIN_QUERY,
+            const { data } = await client.mutate({
+                mutation: LOGIN_MUTATION,
                 variables: { username, password },
             });
-            localStorage.setItem('token', data.login.sessionToken);
-            return data.login;
+            const session = data.auth.loginUser;
+            localStorage.setItem('token', session.sessionToken);
+            return session;
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -50,18 +56,19 @@ export const refreshSession = createAsyncThunk(
     async (_, { getState, rejectWithValue, dispatch }) => {
         try {
             const token = getState().auth.sessionToken;
-            const { data } = await client.query({
-                query: REFRESH_SESSION_QUERY,
+            const { data } = await client.mutate({
+                mutation: REFRESH_SESSION_MUTATION,
                 context: {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 },
             });
-            const newToken = data.refreshSession.sessionToken;
+            const session = data.auth.refreshSession;
+            const newToken = session.sessionToken;
             localStorage.setItem('token', newToken);
             dispatch(setAuthState({ sessionToken: newToken }));
-            return data.refreshSession;
+            return session;
         } catch (error) {
             return rejectWithValue(error.message);
         }

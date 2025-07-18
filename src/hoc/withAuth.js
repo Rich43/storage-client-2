@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
-import { gql, useLazyQuery } from '@apollo/client';
+import { gql, useMutation } from '@apollo/client';
 import { setAuthState } from '../features/auth/authSlice';
 
 const withAuth = (WrappedComponent) => {
@@ -12,23 +12,25 @@ const withAuth = (WrappedComponent) => {
         const { sessionToken } = useSelector((state) => state.auth);
 
         const REFRESH_SESSION = gql`
-            query refreshSession {
-                refreshSession {
-                    userId
-                    sessionId
-                    username
-                    avatarPicture
-                    sessionToken
-                    sessionExpireDateTime
-                    admin
+            mutation refreshSession {
+                auth {
+                    refreshSession {
+                        userId
+                        sessionId
+                        username
+                        avatarPicture
+                        sessionToken
+                        sessionExpireDateTime
+                        admin
+                    }
                 }
             }
         `;
 
-        const [refreshSessionQuery, { data }] = useLazyQuery(REFRESH_SESSION, {
+        const [refreshSessionMutation, { data }] = useMutation(REFRESH_SESSION, {
             onCompleted: (data) => {
-                if (data && data.refreshSession) {
-                    dispatch(setAuthState(data.refreshSession));
+                if (data && data.auth && data.auth.refreshSession) {
+                    dispatch(setAuthState(data.auth.refreshSession));
                     setLoading(false);
                 } else {
                     router.push('/login');
@@ -44,7 +46,7 @@ const withAuth = (WrappedComponent) => {
                     return;
                 }
                 try {
-                    await refreshSessionQuery();
+                    await refreshSessionMutation();
                 } catch (error) {
                     router.push('/login');
                 }
@@ -52,7 +54,7 @@ const withAuth = (WrappedComponent) => {
             if (typeof window !== 'undefined') {
                 checkAuth();
             }
-        }, [refreshSessionQuery, router]);
+        }, [refreshSessionMutation, router]);
 
         if (loading) {
             return <p>Loading...</p>; // or a loading spinner

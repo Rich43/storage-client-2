@@ -17,8 +17,10 @@ import Navbar from '../components/Navbar';
 
 const CREATE_MEDIA_MUTATION = gql`
     mutation createMedia($input: CreateMediaInput!) {
-        createMedia(input: $input) {
-            id
+        media {
+            createMedia(input: $input) {
+                id
+            }
         }
     }
 `;
