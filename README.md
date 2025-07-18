@@ -26,6 +26,17 @@ npm run dev
 
 The app will be available at [http://localhost:3000](http://localhost:3000). GraphQL requests are proxied to `http://localhost:4000/graphql` as configured in `next.config.mjs`.
 
+### File server
+
+Raw file data is handled by the separate `storage-file-server-2` REST API. By default the client expects this service to run at `http://localhost:3500`. Set `NEXT_PUBLIC_FILE_SERVER_URL` to override the URL if required.
+
+Uploading a file happens in two steps:
+
+1. A media record is created through the GraphQL mutation `createMedia`.
+2. The selected file is sent to `POST /media/upload` with the user's `sessionToken` and the created `mediaId` as described in `docs/FILE_SERVER_PROTOCOL.md`.
+
+Files are downloaded via `GET /media/:id/download`.
+
 To build for production run:
 
 ```bash

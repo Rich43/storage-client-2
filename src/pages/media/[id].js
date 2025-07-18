@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { gql, useQuery } from '@apollo/client';
 import { Button, Container, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar';
+import { downloadUrl } from '../../lib/fileServerApi';
 
 const GET_MEDIA_BY_ID_QUERY = gql`
     query getMediaById($id: ID!) {
@@ -37,18 +38,18 @@ function MediaDetails() {
                 <Typography variant="h4" gutterBottom>{media.title}</Typography>
                 {media.mimetype.startsWith('video/') && (
                     <video width="100%" controls>
-                        <source src={media.url} type={media.mimetype} />
+                        <source src={downloadUrl(media.id)} type={media.mimetype} />
                         Your browser does not support the video tag.
                     </video>
                 )}
                 {media.mimetype.startsWith('audio/') && (
                     <audio controls>
-                        <source src={media.url} type={media.mimetype} />
+                        <source src={downloadUrl(media.id)} type={media.mimetype} />
                         Your browser does not support the audio element.
                     </audio>
                 )}
                 {!media.mimetype.startsWith('video/') && !media.mimetype.startsWith('audio/') && (
-                    <Button variant="contained" color="primary" href={media.url} download>
+                    <Button variant="contained" color="primary" href={downloadUrl(media.id)} download>
                         Download
                     </Button>
                 )}
